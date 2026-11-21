@@ -1,3 +1,76 @@
 # Pinisi
 
-Pinisi is an independent, Java-native multimodal search and retrieval platform. Its architecture and initial documentation are being developed in a dedicated pull request.
+**Pinisi is an independent, Java-native multimodal search and retrieval platform.**
+
+It indexes and searches content where it lives—local filesystems and supported cloud/object stores—without requiring users to migrate their original media into a proprietary store.
+
+Pinisi is designed as both:
+- An embeddable Java library for applications that need search capabilities in-process.
+- An independently deployable search runtime with APIs and background ingestion workers.
+
+## What Pinisi is responsible for
+
+- Source discovery and incremental ingestion.
+- Image, audio, video, document and text processing.
+- Asset, segment, metadata and embedding lifecycle.
+- Dense, lexical, hybrid and temporal retrieval.
+- Ranking, filtering and result aggregation.
+- Search APIs, SDK, CLI and runtime.
+- Source connectors and index-provider extension points.
+
+## What Pinisi is not
+
+Pinisi is not a general-purpose agent framework, a vector database, or a RAG-only library. It does not own agent planning or workflows, and it does not require ownership or migration of original media.
+
+## Ecosystem
+
+| Project | Responsibility |
+|---|---|
+| **Pinisi** | Multimodal search, ingestion, indexing and retrieval |
+| **Andalus** | Neutral, general-purpose agentic platform and extension framework |
+| **Aljabr** | ML/compute abstractions, tensor operations and embedding/model APIs |
+| **AQLI** | Model inference execution, scheduling and serving |
+
+Pinisi can integrate with Andalus through optional tools/extensions and MCP interfaces. Pinisi core must remain usable without Andalus. Aljabr/AQLI integrations are provider adapters, not mandatory dependencies of the public API.
+
+## Architecture documentation
+
+- [Architecture overview](docs/architecture/OVERVIEW.md)
+- [System boundaries](docs/architecture/SYSTEM_BOUNDARIES.md)
+- [Module structure](docs/architecture/MODULE_STRUCTURE.md)
+- [Runtime model](docs/architecture/RUNTIME_MODEL.md)
+- [Domain model](docs/api/DOMAIN_MODEL.md)
+- [Search API direction](docs/api/SEARCH_API.md)
+- [Extension SPI](docs/api/EXTENSION_SPI.md)
+- [Ingestion architecture](docs/ingestion/INGESTION_ARCHITECTURE.md)
+- [Retrieval architecture](docs/retrieval/RETRIEVAL_ARCHITECTURE.md)
+- [Roadmap](docs/roadmap/ROADMAP.md)
+- [Repository contribution guidance](AGENTS.md)
+
+These documents define the intended architecture and API direction. They are not claims that the described runtime features or interfaces have already been implemented.
+
+## Initial implementation direction
+
+The first end-to-end milestone is a local image-search vertical slice:
+
+1. Discover images from a local filesystem.
+2. Process images with a pluggable media processor.
+3. Generate embeddings through a provider adapter (initial target: EmbeddingGemma 2 via Aljabr/AQLI, subject to verified runtime support).
+4. Persist metadata and vectors.
+5. Search images using natural-language text queries.
+
+Audio, video, documents, cloud connectors, standalone APIs and Andalus/MCP integrations follow as incremental milestones.
+
+## Design principles
+
+1. **Model-independent:** no single embedding model is hardcoded into Pinisi.
+2. **Storage-independent:** original media remains under user control.
+3. **Runtime-independent:** embedded and standalone usage share the same engine.
+4. **Provider-neutral:** vector stores, metadata stores, processors and connectors are replaceable.
+5. **Provenance-preserving:** search results retain source identity and segment positions.
+6. **Capability-driven:** cross-modal search is enabled only when embedding providers declare compatible modality pairings.
+7. **Permission-aware:** search must not expose objects the caller is not authorized to access.
+
+## Status
+
+Pinisi is at the architecture-foundation stage. See the [roadmap](docs/roadmap/ROADMAP.md) for planned milestones and release gates.
