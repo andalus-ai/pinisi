@@ -21,17 +21,20 @@ class EmbeddingRequestTest {
     }
 
     @Test
-    void requestSupportsTextBinaryAndUriInputsInOneBatch() {
+    void requestSupportsTextImageAudioAndGenericBinaryInputsInOneBatch() {
         var request = new EmbeddingRequest(List.of(
                 new EmbeddingInput("text-1", new TextContent("find a red car")),
                 new EmbeddingInput("image-1", new BinaryContent(MediaType.IMAGE, "image/jpeg", new byte[] {1})),
                 new EmbeddingInput("audio-1", new UriContent(MediaType.AUDIO,
-                        URI.create("https://media.example.test/sample.wav"), "audio/wav"))));
+                        URI.create("https://media.example.test/sample.wav"), "audio/wav")),
+                new EmbeddingInput("binary-1", new BinaryContent(
+                        MediaType.BINARY, "application/octet-stream", new byte[] {2}))));
 
-        assertEquals(3, request.inputs().size());
+        assertEquals(4, request.inputs().size());
         assertEquals(MediaType.TEXT, request.inputs().get(0).content().mediaType());
         assertEquals(MediaType.IMAGE, request.inputs().get(1).content().mediaType());
         assertEquals(MediaType.AUDIO, request.inputs().get(2).content().mediaType());
+        assertEquals(MediaType.BINARY, request.inputs().get(3).content().mediaType());
     }
 
     @Test
