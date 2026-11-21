@@ -29,7 +29,17 @@ The provider declares:
 - Whether it accepts binary payloads and URI references.
 - Provider, model and model-revision identity.
 
-A batch provider must preserve input IDs and return one embedding per accepted input. Callers must split batches according to the declared maximum. URI support is not permission to bypass source authorization: adapters must apply explicit allowlists, credentials and access policy. Binary payload sizes and decoding limits must be bounded by the implementation.
+### Core orchestration
+
+`MultimodalEmbeddingProviderRegistry` registers providers by stable ID, rejects duplicate IDs and exposes explicit query/document pair capability checks. `MultimodalEmbeddingService` resolves the requested provider and:
+1. Validates all input modalities and binary/URI transport capabilities before invoking the provider.
+2. Splits requests into batches no larger than the provider's declared maximum while preserving request IDs and request parameters.
+3. Validates each batch response for missing, foreign or duplicate IDs and restores the original request order.
+4. Verifies each returned vector's provider/model/revision and input-modality identity, plus the requested embedding-space ID when one is supplied.
+
+Provider exceptions propagate to the caller; the orchestration layer does not silently retry or change providers. Retry, timeout and cancellation policy belong to the runtime/job execution layer. Pair declarations are queried explicitly and are never inferred from equal vector dimensions.
+
+A batch provider must preserve input IDs and return one embedding per accepted input. URI support is not permission to bypass source authorization: adapters must apply explicit allowlists, credentials and access policy. Binary payload sizes and decoding limits must be bounded by the implementation.
 
 The existing `EmbeddingProvider` and `ImageEmbeddingProvider` remain available during migration. New multimodal integrations should implement `MultimodalEmbeddingProvider`; no existing contract is silently reinterpreted.
 
