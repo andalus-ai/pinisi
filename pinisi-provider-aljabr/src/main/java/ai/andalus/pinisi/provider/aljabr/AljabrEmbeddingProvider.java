@@ -14,8 +14,6 @@ import ai.andalus.pinisi.api.TextContent;
 import ai.andalus.pinisi.api.UriContent;
 import ai.andalus.pinisi.spi.MultimodalEmbeddingProvider;
 import tech.kayys.aljabr.spi.embedding.EmbeddingModelRunner;
-import tech.kayys.aljabr.spi.embedding.EmbeddingRequest as AljabrEmbeddingRequest;
-import tech.kayys.aljabr.spi.embedding.EmbeddingResponse as AljabrEmbeddingResponse;
 import tech.kayys.aljabr.spi.embedding.EmbeddingTask;
 
 import java.util.ArrayList;
@@ -108,10 +106,10 @@ public final class AljabrEmbeddingProvider implements MultimodalEmbeddingProvide
             if (!"task".equals(key)) parameters.put(key, value);
         });
         String requestId = UUID.randomUUID().toString();
-        AljabrEmbeddingRequest aljabrRequest = new AljabrEmbeddingRequest(
+        tech.kayys.aljabr.spi.embedding.EmbeddingRequest aljabrRequest = new tech.kayys.aljabr.spi.embedding.EmbeddingRequest(
                 requestId, modelId, texts, Map.copyOf(parameters), task, outputDimension);
 
-        AljabrEmbeddingResponse aljabrResponse;
+        tech.kayys.aljabr.spi.embedding.EmbeddingResponse aljabrResponse;
         try {
             aljabrResponse = Objects.requireNonNull(
                     runner.embed(aljabrRequest), "Aljabr runner returned a null CompletionStage")
@@ -134,7 +132,7 @@ public final class AljabrEmbeddingProvider implements MultimodalEmbeddingProvide
         return new EmbeddingResponse(results);
     }
 
-    private void validateResponse(AljabrEmbeddingResponse response, String requestId, int inputCount) {
+    private void validateResponse(tech.kayys.aljabr.spi.embedding.EmbeddingResponse response, String requestId, int inputCount) {
         Objects.requireNonNull(response, "Aljabr runner returned a null response");
         if (!requestId.equals(response.requestId())) {
             throw new IllegalStateException("Aljabr response requestId does not match submitted request");
