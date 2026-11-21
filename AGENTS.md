@@ -58,7 +58,8 @@ Pinisi is not an agent framework, vector database, or RAG-only library. It must 
 - Search should support modality constraints, metadata filters, result limits, and pagination.
 
 ## Implementation and quality
-- Follow the repository's established build and Java conventions once introduced; do not invent parallel conventions.
+- Java 21 is the initial language baseline; Maven is the initial build reactor.
+- Keep modules small and purposeful: public API, SPI, core and provider/runtime adapters remain separate.
 - Add unit tests for domain invariants and contract tests for every SPI/provider.
 - Add integration tests for each supported backend and source connector.
 - Add cross-modal evaluation fixtures and retrieval-quality benchmarks before claiming modality support production-ready.
