@@ -42,6 +42,7 @@ Pinisi can integrate with Andalus through optional tools/extensions and MCP inte
 - [Domain model](docs/api/DOMAIN_MODEL.md)
 - [Search API direction](docs/api/SEARCH_API.md)
 - [Extension SPI](docs/api/EXTENSION_SPI.md)
+- [Aljabr provider integration](docs/integrations/ALJABR_PROVIDER.md)
 - [Ingestion architecture](docs/ingestion/INGESTION_ARCHITECTURE.md)
 - [Retrieval architecture](docs/retrieval/RETRIEVAL_ARCHITECTURE.md)
 - [Roadmap](docs/roadmap/ROADMAP.md)
@@ -49,9 +50,9 @@ Pinisi can integrate with Andalus through optional tools/extensions and MCP inte
 
 ## Implementation status
 
-The architecture foundation is documented in [PR #1](https://github.com/andalus-ai/pinisi/pull/1), and the Java/Maven foundation is in [PR #2](https://github.com/andalus-ai/pinisi/pull/2). The typed multimodal embedding API is in [PR #6](https://github.com/andalus-ai/pinisi/pull/6). This branch adds provider registry and request orchestration: capability validation, bounded batch splitting, result identity/order checks and embedding-space validation.
+The architecture foundation is documented in [PR #1](https://github.com/andalus-ai/pinisi/pull/1), and the Java/Maven foundation is in [PR #2](https://github.com/andalus-ai/pinisi/pull/2). The typed multimodal embedding API is in [PR #6](https://github.com/andalus-ai/pinisi/pull/6). The multimodal provider registry and request orchestration add capability validation, bounded batch splitting, result identity/order checks and embedding-space validation. An optional Java 25 Aljabr adapter now bridges the text-only Aljabr `EmbeddingModelRunner` SPI while keeping the default Pinisi API/core Java 21 and dependency-free. It does not claim image support: Aljabr's image entry point still requires pre-expanded tokens and decoded RGB images and is not yet connected to the generic embedding runner SPI.
 
-This remains an early implementation: no production Aljabr/AQLI embedding adapter or persistent vector store is bundled. EmbeddingGemma 2 remains under evaluation for the required text/image modality pairings and intended inference runtime.
+A checkpoint-backed Aljabr integration and persistent vector store are not yet bundled. AQLI remains a separate optional serving/runtime integration.
 
 ## Design principles
 
