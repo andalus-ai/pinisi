@@ -47,19 +47,11 @@ Pinisi can integrate with Andalus through optional tools/extensions and MCP inte
 - [Roadmap](docs/roadmap/ROADMAP.md)
 - [Repository contribution guidance](AGENTS.md)
 
-These documents define the intended architecture and API direction. They are not claims that the described runtime features or interfaces have already been implemented.
+## Implementation status
 
-## Initial implementation direction
+The architecture foundation is documented in [PR #1](https://github.com/andalus-ai/pinisi/pull/1). The first Java/Maven implementation is being developed in the M1 foundation branch. See [M1 foundation notes](docs/implementation/M1_FOUNDATION.md) for the scope and explicit limitations.
 
-The first end-to-end milestone is a local image-search vertical slice:
-
-1. Discover images from a local filesystem.
-2. Process images with a pluggable media processor.
-3. Generate embeddings through a provider adapter (initial target: EmbeddingGemma 2 via Aljabr/AQLI, subject to verified runtime support).
-4. Persist metadata and vectors.
-5. Search images using natural-language text queries.
-
-Audio, video, documents, cloud connectors, standalone APIs and Andalus/MCP integrations follow as incremental milestones.
+The first end-to-end production target remains local image search using a verified text-to-image embedding provider. No production embedding model is bundled yet.
 
 ## Design principles
 
@@ -70,7 +62,3 @@ Audio, video, documents, cloud connectors, standalone APIs and Andalus/MCP integ
 5. **Provenance-preserving:** search results retain source identity and segment positions.
 6. **Capability-driven:** cross-modal search is enabled only when embedding providers declare compatible modality pairings.
 7. **Permission-aware:** search must not expose objects the caller is not authorized to access.
-
-## Status
-
-Pinisi is at the architecture-foundation stage. See the [roadmap](docs/roadmap/ROADMAP.md) for planned milestones and release gates.
