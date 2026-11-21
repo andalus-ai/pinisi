@@ -49,9 +49,9 @@ Pinisi can integrate with Andalus through optional tools/extensions and MCP inte
 
 ## Implementation status
 
-The architecture foundation is documented in [PR #1](https://github.com/andalus-ai/pinisi/pull/1). The Java/Maven foundation is in [PR #2](https://github.com/andalus-ai/pinisi/pull/2). Local filesystem image discovery and the streaming ingestion adapter are described in [M1 filesystem ingestion](docs/implementation/M1_FILESYSTEM_INGESTION.md).
+The architecture foundation is documented in [PR #1](https://github.com/andalus-ai/pinisi/pull/1), and the Java/Maven foundation is in [PR #2](https://github.com/andalus-ai/pinisi/pull/2). The typed multimodal embedding API is in [PR #6](https://github.com/andalus-ai/pinisi/pull/6). This branch adds provider registry and request orchestration: capability validation, bounded batch splitting, result identity/order checks and embedding-space validation.
 
-This remains an early implementation: no production embedding model or persistent vector store is bundled. EmbeddingGemma 2 remains under evaluation for the required text/image modality pairings and the intended inference runtime.
+This remains an early implementation: no production Aljabr/AQLI embedding adapter or persistent vector store is bundled. EmbeddingGemma 2 remains under evaluation for the required text/image modality pairings and intended inference runtime.
 
 ## Design principles
 
