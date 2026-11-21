@@ -17,6 +17,8 @@ public final class LocalImageIndexer {
     }
     public int ingest(MediaSource source) throws IOException {
         Objects.requireNonNull(source);
+        if (!embeddings.supports(MediaType.IMAGE, MediaType.IMAGE))
+            throw new IllegalStateException("Embedding provider does not support image-input embeddings");
         int indexed = 0;
         for (Asset asset : source.discover()) {
             if (asset.mediaType() != MediaType.IMAGE) continue;
