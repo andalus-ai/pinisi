@@ -11,14 +11,15 @@ This roadmap describes intended milestones, not implemented features. Release re
 
 ## M1 — Core and local image-search vertical slice
 - [ ] Establish Maven reactor and Java/toolchain policy.
-- [ ] Implement public domain/API and SPI contracts.
-- [x] Add initial typed multimodal embedding request/capability contracts (text, binary media, URI references and batches); provider execution adapters remain pending.
+- [x] Implement initial public domain/API and embedding SPI contracts.
+- [x] Add typed multimodal embedding request/capability contracts (text, binary media, URI references and batches).
+- [x] Add provider registry and synchronous embedding orchestration (capability validation, bounded batch splitting, response identity/order validation).
 - [ ] Implement engine orchestration and collection lifecycle.
 - [ ] Implement filesystem source connector.
 - [ ] Implement metadata persistence and in-memory vector provider for tests.
 - [ ] Integrate one real embedding provider through the provider SPI.
 - [ ] Implement image processing and text-to-image retrieval.
-- [ ] Add contract tests, integration tests and a reproducible example.
+- [ ] Add provider contract tests, integration tests and a reproducible example.
 
 ## M2 — Persistent indexing and production ingestion
 - [ ] Add a persistent vector backend.
