@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>ai.andalus.pinisi</groupId><artifactId>pinisi-parent</artifactId><version>0.1.0-SNAPSHOT</version><packaging>pom</packaging>
   <name>Pinisi</name>
-  <modules><module>pinisi-api</module><module>pinisi-spi</module><module>pinisi-core</module><module>pinisi-example</module></modules>
+  <modules><module>pinisi-api</module><module>pinisi-spi</module><module>pinisi-core</module><module>pinisi-connector-filesystem</module><module>pinisi-example</module></modules>
   <properties><maven.compiler.release>21</maven.compiler.release><project.build.sourceEncoding>UTF-8</project.build.sourceEncoding><junit.version>5.11.4</junit.version></properties>
   <dependencyManagement><dependencies><dependency><groupId>org.junit</groupId><artifactId>junit-bom</artifactId><version>${junit.version}</version><type>pom</type><scope>import</scope></dependency></dependencies></dependencyManagement>
   <build><plugins>

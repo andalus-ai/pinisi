@@ -49,9 +49,9 @@ Pinisi can integrate with Andalus through optional tools/extensions and MCP inte
 
 ## Implementation status
 
-The architecture foundation is documented in [PR #1](https://github.com/andalus-ai/pinisi/pull/1). The first Java/Maven implementation is being developed in the M1 foundation branch. See [M1 foundation notes](docs/implementation/M1_FOUNDATION.md) for the scope and explicit limitations.
+The architecture foundation is documented in [PR #1](https://github.com/andalus-ai/pinisi/pull/1). The Java/Maven foundation is in [PR #2](https://github.com/andalus-ai/pinisi/pull/2). Local filesystem image discovery and the streaming ingestion adapter are described in [M1 filesystem ingestion](docs/implementation/M1_FILESYSTEM_INGESTION.md).
 
-The first end-to-end production target remains local image search using a verified text-to-image embedding provider. No production embedding model is bundled yet.
+This remains an early implementation: no production embedding model or persistent vector store is bundled. EmbeddingGemma 2 remains under evaluation for the required text/image modality pairings and the intended inference runtime.
 
 ## Design principles
 
