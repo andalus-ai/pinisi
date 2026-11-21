@@ -12,6 +12,7 @@ This roadmap describes intended milestones, not implemented features. Release re
 ## M1 — Core and local image-search vertical slice
 - [ ] Establish Maven reactor and Java/toolchain policy.
 - [ ] Implement public domain/API and SPI contracts.
+- [x] Add initial typed multimodal embedding request/capability contracts (text, binary media, URI references and batches); provider execution adapters remain pending.
 - [ ] Implement engine orchestration and collection lifecycle.
 - [ ] Implement filesystem source connector.
 - [ ] Implement metadata persistence and in-memory vector provider for tests.
