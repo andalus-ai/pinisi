@@ -83,4 +83,50 @@ The embedding-space identifier is semantic, not just dimensional. Pinisi must re
 
 ## Current conclusion
 
-The filesystem ingestion slice can discover images and pass their streams to an image-capable provider, but it is not itself a semantic image-search implementation. Based on the upstream documentation reviewed on 2026-11-21, neither an Aljabr image-embedding Java call path nor an AQLI image-embedding API has yet been established. The next code change should follow source-level API verification, not precede it.
+The filesystem ingestion slice can discover images and pass their streams to an image-capable provider, but it is not itself a semantic image-search implementation. Source inspection on 2026-11-21 found substantial Aljabr EmbeddingGemma 2 image-reference components, but the model-family plugin explicitly advertises `supported_modalities=text`, defers image/audio/video, and says the inference runner is not registered. The image path is therefore a float32 reference pipeline, not a runnable registered image embedding model. AQLI exposes an `EmbeddingService` multimodal SPI and a `UnifiedMultimodalRuntime` extension point, but the inspected tree contains no concrete `EmbeddingService` implementation; its compatibility `EmbeddingRequest` still accepts `List<String>`. Thus neither project currently provides a verified, runnable image-to-shared-text-space embedding path. The next code change should follow runner completion and source-level API verification, not precede it.
+
+
+## Source-level audit (2026-11-21)
+
+The upstream source trees were inspected after the initial documentation review. This materially narrows the integration decision.
+
+### Aljabr: substantial reference implementation, runner not registered
+
+The `models/aljabr-model-embedding-gemma2` module contains:
+- `EmbeddingGemma2MultimodalEncoder`, which composes decoded RGB images, a vision pipeline, image-placeholder replacement, and the text backbone.
+- A Gemma4-compatible image processor, vision tower, spatial pooler, image-to-text soft-token projection, and multimodal checkpoint mapper.
+- Unit tests for multimodal image projection and synthetic checkpoint/image pipeline components.
+- A separate `aljabr-safetensor-embedding-gemma2` module whose README describes a **text-only** model bundle.
+
+However, the model-family plugin is explicit:
+- `supported_modalities=text`
+- `deferred_modalities=image,audio,video`
+- `runner_status=not_registered_until_forward_path_is_complete`
+- The plugin intentionally does not declare direct Safetensors inference readiness.
+
+The module README likewise says these float32 reference operations are not a complete registered model runner; full parity against a published checkpoint and runner registration remain outstanding. The image processor accepts already-decoded RGB samples, so codec integration is external. The model module uses Java 25, while Pinisi currently targets Java 21; this is a material compatibility blocker unless Aljabr publishes a compatible artifact/toolchain or Pinisi raises its baseline deliberately.
+
+Source references:
+- [EmbeddingGemma 2 model module README](https://github.com/andalus-ai/aljabr/blob/main/models/aljabr-model-embedding-gemma2/README.md)
+- [Model-family plugin](https://github.com/andalus-ai/aljabr/blob/main/models/aljabr-model-embedding-gemma2/src/main/java/tech/kayys/aljabr/models/embeddinggemma2/EmbeddingGemma2ModelFamilyPlugin.java)
+- [Multimodal encoder](https://github.com/andalus-ai/aljabr/blob/main/models/aljabr-model-embedding-gemma2/src/main/java/tech/kayys/aljabr/models/embeddinggemma2/EmbeddingGemma2MultimodalEncoder.java)
+- [Safetensors adapter README](https://github.com/andalus-ai/aljabr/blob/main/engine/safetensor/aljabr-safetensor-embedding-gemma2/README.md)
+- [Model module Gradle build](https://github.com/andalus-ai/aljabr/blob/main/models/aljabr-model-embedding-gemma2/build.gradle.kts)
+
+### AQLI: SPI exists, concrete provider not found
+
+AQLI contains a multimodal `EmbeddingService` SPI with single-item and batch methods over Aljabr `MultimodalContent`, returning float vectors. It also contains a `UnifiedMultimodalRuntime` ServiceLoader extension point and manifest/plan metadata for input modalities and readiness.
+
+The inspected source tree did not reveal a concrete implementation of `EmbeddingService` or a registered EmbeddingGemma 2 unified runtime. The compatibility inference `EmbeddingRequest` still accepts text `List<String>`; the REST `/v1/embeddings` resource maps to that DTO. Therefore the SPI is an extension contract, not evidence of a running image embedding endpoint.
+
+Source references:
+- [AQLI EmbeddingService SPI](https://github.com/andalus-ai/aqli/blob/main/framework/spi/aqli-spi-multimodal/src/main/java/tech/kayys/aqli/spi/embedding/EmbeddingService.java)
+- [AQLI UnifiedMultimodalRuntime SPI](https://github.com/andalus-ai/aqli/blob/main/framework/spi/aqli-spi-multimodal/src/main/java/tech/kayys/aqli/spi/multimodal/UnifiedMultimodalRuntime.java)
+- [AQLI compatibility EmbeddingRequest](https://github.com/andalus-ai/aqli/blob/main/framework/spi/aqli-spi-inference/src/main/java/tech/kayys/aqli/spi/embedding/EmbeddingRequest.java)
+- [AQLI REST EmbeddingsResource](https://github.com/andalus-ai/aqli/blob/main/framework/api/aqli-api/src/main/java/tech/kayys/aqli/server/api/v1/EmbeddingsResource.java)
+
+### Revised recommendation
+
+Do not create a Pinisi Aljabr or AQLI adapter yet. The smallest credible next upstream milestone is to complete and register Aljabr's EmbeddingGemma 2 runner for text and image, advertise the true modality matrix only after runtime validation, and supply a Java 21-compatible integration surface (or an explicit Pinisi Java baseline decision). In parallel, AQLI can add a concrete `EmbeddingService` implementation backed by that runner and expose a modality-aware request contract. Pinisi should then implement a thin optional adapter, with an end-to-end fixture test proving text-to-image retrieval in one verified embedding space.
+
+This audit is source-level only. No upstream build, model checkpoint load, backend initialization, or real-checkpoint parity test was run in this environment.
