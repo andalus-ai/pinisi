@@ -17,9 +17,9 @@ This roadmap describes intended milestones, not implemented features. Release re
 - [ ] Implement engine orchestration and collection lifecycle.
 - [ ] Implement filesystem source connector.
 - [ ] Implement metadata persistence and in-memory vector provider for tests.
-- [ ] Integrate one real embedding provider through the provider SPI.
+- [ ] Complete a checkpoint-backed end-to-end provider path (the optional Aljabr text adapter is implemented; runner registration and model-loading integration remain host responsibilities).
 - [ ] Implement image processing and text-to-image retrieval.
-- [ ] Add provider contract tests, integration tests and a reproducible example.
+- [ ] Add provider contract tests, checkpoint-backed integration tests and a reproducible example.
 
 ## M2 — Persistent indexing and production ingestion
 - [ ] Add a persistent vector backend.
