@@ -99,26 +99,19 @@ public final class MultimodalEmbeddingService {
                 || !capabilities.modelRevision().equals(space.revision())) {
             throw new IllegalStateException("Provider returned a vector from an undeclared embedding provider/model/revision");
         }
-        MediaType inputModality;
-        try {
-            inputModality = MediaType.valueOf(space.inputModality().toUpperCase(java.util.Locale.ROOT));
-        } catch (IllegalArgumentException ex) {
-            throw new IllegalStateException("Embedding space declares an unknown input modality: " + space.inputModality(), ex);
-        }
-        if (!capabilities.inputModalities().contains(inputModality)) {
-            throw new IllegalStateException("Embedding space modality is not declared by provider: " + inputModality);
-        }
         if (request.targetEmbeddingSpaceId() != null
                 && !request.targetEmbeddingSpaceId().equals(space.id())) {
             throw new IllegalStateException("Provider returned embedding space " + space.id()
                     + " but request targeted " + request.targetEmbeddingSpaceId());
         }
+
         MediaType requestedModality = request.inputs().stream()
                 .filter(input -> input.id().equals(result.inputId()))
                 .findFirst().orElseThrow().content().mediaType();
-        if (requestedModality != inputModality) {
-            throw new IllegalStateException("Embedding space modality " + inputModality
-                    + " does not match input modality " + requestedModality + " for " + result.inputId());
+        if (requestedModality != result.embedding().modality()) {
+            throw new IllegalStateException("Embedding vector modality " + result.embedding().modality()
+                    + " does not match input modality " + requestedModality
+                    + " for " + result.inputId());
         }
     }
 }

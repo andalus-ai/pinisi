@@ -121,13 +121,13 @@ public final class AljabrEmbeddingProvider implements MultimodalEmbeddingProvide
         validateResponse(aljabrResponse, requestId, texts.size());
 
         List<EmbeddingResult> results = new ArrayList<>(request.inputs().size());
+        EmbeddingSpace space = new EmbeddingSpace(
+                embeddingSpaceId, providerId, modelId, modelRevision, outputDimension, metric);
         for (int index = 0; index < request.inputs().size(); index++) {
             EmbeddingInput input = request.inputs().get(index);
-            EmbeddingSpace space = new EmbeddingSpace(
-                    embeddingSpaceId, providerId, modelId, modelRevision,
-                    MediaType.TEXT.name(), outputDimension, metric);
             results.add(new EmbeddingResult(input.id(),
-                    new EmbeddingVector(space, aljabrResponse.embeddings().get(index))));
+                    new EmbeddingVector(space, input.content().mediaType(),
+                            aljabrResponse.embeddings().get(index))));
         }
         return new EmbeddingResponse(results);
     }
