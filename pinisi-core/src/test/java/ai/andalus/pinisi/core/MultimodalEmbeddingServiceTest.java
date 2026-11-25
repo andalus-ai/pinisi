@@ -34,6 +34,23 @@ class MultimodalEmbeddingServiceTest {
     }
 
     @Test
+    void allowsDifferentModalitiesInOneSharedEmbeddingSpace() {
+        var provider = new TestProvider(request -> new EmbeddingResponse(
+                request.inputs().stream().map(input -> result(input.id(), input.content().mediaType())).toList()));
+        var response = service(provider).embed("test-provider", request(
+                input("text-query", new TextContent("a red boat")),
+                input("image-document", new BinaryContent(MediaType.IMAGE, "image/png", new byte[]{1}))));
+
+        assertEquals("shared-space", response.results().get(0).embedding().space().id());
+        assertEquals(response.results().get(0).embedding().space(),
+                response.results().get(1).embedding().space());
+        assertEquals(MediaType.TEXT, response.results().get(0).embedding().modality());
+        assertEquals(MediaType.IMAGE, response.results().get(1).embedding().modality());
+        assertTrue(serviceRegistry(provider).supportsPair("test-provider",
+                new EmbeddingPair(MediaType.TEXT, MediaType.IMAGE)));
+    }
+
+    @Test
     void rejectsUnsupportedModalityBeforeCallingProvider() {
         var provider = new TestProvider(request -> fail("provider must not be called"));
         var service = service(provider);
@@ -57,10 +74,19 @@ class MultimodalEmbeddingServiceTest {
         var provider = new TestProvider(request -> new EmbeddingResponse(List.of(
                 new EmbeddingResult(request.inputs().getFirst().id(),
                         new EmbeddingVector(new EmbeddingSpace("wrong", "test-provider", "test-model",
-                                "1", "TEXT", 3, "cosine"), new float[]{1, 0, 0})))));
+                                "1", 3, "cosine"), MediaType.TEXT, new float[]{1, 0, 0})))));
         var service = service(provider);
         assertThrows(IllegalStateException.class, () -> service.embed("test-provider",
                 new EmbeddingRequest(List.of(input("one", new TextContent("one"))), "expected-space", Map.of())));
+    }
+
+    @Test
+    void rejectsResultWhoseModalityDoesNotMatchItsInput() {
+        var provider = new TestProvider(request -> new EmbeddingResponse(List.of(
+                result(request.inputs().getFirst().id(), MediaType.IMAGE))));
+        var service = service(provider);
+        assertThrows(IllegalStateException.class, () -> service.embed("test-provider",
+                request(input("text", new TextContent("not an image")))));
     }
 
     @Test
@@ -83,7 +109,11 @@ class MultimodalEmbeddingServiceTest {
     }
 
     private static MultimodalEmbeddingService service(TestProvider provider) {
-        return new MultimodalEmbeddingService(new MultimodalEmbeddingProviderRegistry(List.of(provider)));
+        return new MultimodalEmbeddingService(serviceRegistry(provider));
+    }
+
+    private static MultimodalEmbeddingProviderRegistry serviceRegistry(TestProvider provider) {
+        return new MultimodalEmbeddingProviderRegistry(List.of(provider));
     }
 
     private static EmbeddingRequest request(EmbeddingInput... inputs) {
@@ -96,8 +126,8 @@ class MultimodalEmbeddingServiceTest {
 
     private static EmbeddingResult result(String id, MediaType modality) {
         return new EmbeddingResult(id, new EmbeddingVector(
-                new EmbeddingSpace("space-" + modality, "test-provider", "test-model",
-                        "1", modality.name(), 3, "cosine"), new float[]{1, 0, 0}));
+                new EmbeddingSpace("shared-space", "test-provider", "test-model",
+                        "1", 3, "cosine"), modality, new float[]{1, 0, 0}));
     }
 
     private static final class TestProvider implements MultimodalEmbeddingProvider {

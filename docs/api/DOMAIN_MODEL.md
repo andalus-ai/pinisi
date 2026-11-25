@@ -6,7 +6,8 @@
 - **Asset:** one logical original object, identified within a collection and source.
 - **Segment:** a searchable subpart of an asset.
 - **Representation:** normalized extracted content used by a processor or embedding provider.
-- **Embedding:** vector plus explicit model/space identity, version, dimensions, metric and preprocessing provenance.
+- **Embedding space:** shared vector-space identity, including provider/model/revision, dimensions and metric semantics. A multimodal model may map several input modalities into one space.
+- **Embedding vector:** one vector in an embedding space, retaining the modality of the input that produced it.
 - **Index record:** persisted searchable representation and its links to asset/segment.
 - **Query:** typed user input, target modalities, filters and retrieval options.
 - **Result:** ranked asset/segment match with score, position and safe metadata.
@@ -28,7 +29,7 @@ Use typed position values rather than a single numeric offset:
 Positions must refer to the original asset timeline/structure, not transient processing buffers.
 
 ## Embedding-space identity
-An embedding record must capture at least provider/model identifier, model revision, output dimensions, modality/input recipe, preprocessing version and similarity metric compatibility. Vectors from distinct spaces must not be compared unless a provider explicitly declares compatible spaces or a transformation is applied.
+An embedding space is not identified by dimension alone. It captures provider/model identity, model revision, dimensions and metric compatibility. Individual vectors additionally record their input modality. Providers declare compatible query/document modality pairs; Pinisi must not infer cross-modal compatibility merely because vectors share dimensions or a model name. A requested target space is validated independently from the input modality.
 
 ## Deletion and updates
 Asset deletion must remove or tombstone all dependent segments, embeddings and lexical records. Source updates should create a new version/fingerprint and reconcile derived records idempotently. Preserve audit/provenance information according to collection retention policy.
