@@ -42,7 +42,7 @@ public final class InMemoryVectorStore implements VectorStore {
     }
 
     @Override
-    public List<VectorMatch> search(CollectionDescriptor collection, EmbeddingVector query, int limit) {
+    public synchronized List<VectorMatch> search(CollectionDescriptor collection, EmbeddingVector query, int limit) {
         Objects.requireNonNull(collection, "collection");
         Objects.requireNonNull(query, "query");
         if (limit < 0) throw new IllegalArgumentException("limit must not be negative");
@@ -61,19 +61,19 @@ public final class InMemoryVectorStore implements VectorStore {
     }
 
     @Override
-    public boolean delete(String collectionId, String vectorId) {
+    public synchronized boolean delete(String collectionId, String vectorId) {
         return records.remove(new Key(requireText(collectionId, "collectionId"),
                 requireText(vectorId, "vectorId"))) != null;
     }
 
     @Override
-    public long count(String collectionId) {
+    public synchronized long count(String collectionId) {
         String id = requireText(collectionId, "collectionId");
         return records.keySet().stream().filter(key -> key.collectionId.equals(id)).count();
     }
 
     @Override
-    public long deleteCollection(String collectionId) {
+    public synchronized long deleteCollection(String collectionId) {
         String id = requireText(collectionId, "collectionId");
         long before = count(id);
         records.keySet().removeIf(key -> key.collectionId.equals(id));
