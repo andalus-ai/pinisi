@@ -14,7 +14,7 @@ import java.util.List;
  * can validate the collection's canonical embedding space without depending on
  * a catalog implementation.</p>
  */
-public interface VectorStore {
+public interface VectorStore extends CollectionDataStore {
     void upsert(CollectionDescriptor collection, VectorRecord record);
 
     /** Implementations must validate the complete batch before making it visible. */
@@ -25,7 +25,4 @@ public interface VectorStore {
     boolean delete(String collectionId, String vectorId);
 
     long count(String collectionId);
-
-    /** Removes all vectors in the named collection; unrelated collections are untouched. */
-    long deleteCollection(String collectionId);
 }
