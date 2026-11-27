@@ -23,6 +23,23 @@ and marks it complete only after the catalog entry is removed. Call
 incomplete operations. Completed records are retained for audit; journal
 retention/compaction is an operational policy.
 
+## Tombstone visibility
+
+Use `DeletionAwareCollectionCatalog` as the catalog view at application and
+search read boundaries, and share the same journal instance/configuration with
+the lifecycle coordinator. The coordinator writes a pending tombstone before
+it begins deleting store data. The decorator then hides that collection from
+`find` and `list` until the journal marks deletion `COMPLETED`. It also
+rejects create/update attempts for the same ID while deletion is pending.
+Unrelated collections remain visible.
+
+The decorator is a visibility boundary, not a replacement for the lifecycle
+coordinator. Direct calls to the underlying catalog or direct data-store
+queries bypass it. Route search resolution through the deletion-aware view and
+do not expose raw store search results without checking collection visibility.
+A completed tombstone remains in the journal for audit but does not block
+intentional reuse of the collection ID.
+
 A store's `deleteCollection` operation must be idempotent and atomic within
 that store. Recovery provides at-least-once execution: a process can stop after
 a store deletion but before its checkpoint is committed, so that store may be
