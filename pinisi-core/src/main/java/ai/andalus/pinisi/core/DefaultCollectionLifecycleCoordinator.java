@@ -45,11 +45,25 @@ public final class DefaultCollectionLifecycleCoordinator {
     public synchronized boolean deleteCollection(String collectionId) {
         requireId(collectionId);
         var existing = journal.find(collectionId);
-        if (existing.isEmpty() && catalog.find(collectionId).isEmpty()) return false;
-        CollectionDeletionOperation operation = existing.orElseGet(() -> newOperation(collectionId));
-        if (existing.isEmpty() && !journal.create(operation))
-            operation = journal.find(collectionId).orElseThrow(
-                    () -> new IllegalStateException("Deletion journal create race for " + collectionId));
+        boolean catalogPresent = catalog.find(collectionId).isPresent();
+        if (existing.isEmpty() && !catalogPresent) return false;
+
+        CollectionDeletionOperation operation;
+        if (existing.isEmpty()) {
+            operation = newOperation(collectionId, 0);
+            if (!journal.create(operation))
+                operation = journal.find(collectionId).orElseThrow(
+                        () -> new IllegalStateException("Deletion journal create race for " + collectionId));
+        } else {
+            operation = existing.orElseThrow();
+            if (operation.status() == CollectionDeletionStatus.COMPLETED) {
+                if (!catalogPresent) return true;
+                CollectionDeletionOperation next = newOperation(collectionId, operation.revision() + 1);
+                if (!journal.replace(operation, next))
+                    throw new IllegalStateException("Concurrent collection deletion update for " + collectionId);
+                operation = next;
+            }
+        }
         execute(operation);
         return true;
     }
@@ -98,10 +112,10 @@ public final class DefaultCollectionLifecycleCoordinator {
         return replacement;
     }
 
-    private static CollectionDeletionOperation newOperation(String id) {
+    private static CollectionDeletionOperation newOperation(String id, long revision) {
         Instant now = Instant.now();
         return new CollectionDeletionOperation(id, CollectionDeletionStatus.PENDING, List.of(),
-                null, null, null, 0, now, now);
+                null, null, null, revision, now, now);
     }
 
     private static void requireId(String id) {
