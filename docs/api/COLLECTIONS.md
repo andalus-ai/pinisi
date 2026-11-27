@@ -1,25 +1,26 @@
-# Collections
+# Collection lifecycle
 
-A collection is Pinisi's logical isolation boundary for indexed content and its search configuration.
+Collections are isolated namespaces with one configured embedding space in the
+current milestone. Their definitions are managed through `CollectionCatalog`.
 
-## Definition
+## Safe deletion
 
-A collection definition includes a stable collection ID and display name, description and application metadata, the embedding space used by its vector index, and the modalities accepted for indexing.
+Applications should use `DefaultCollectionLifecycleCoordinator` for deletion
+rather than calling `CollectionCatalog.delete` directly. The coordinator
+cleans each registered `CollectionDataStore` before removing the catalog entry.
+Vector, lexical, metadata, and asset stores can participate without the catalog
+depending on their implementations.
 
-Collection IDs are opaque application identifiers; they are not derived from filenames or source paths.
+A store's `deleteCollection` operation must be idempotent and atomic within
+that store. If cleanup fails, the coordinator leaves the catalog entry in place
+and raises `CollectionCleanupException`, which identifies the failed store and
+the stores that completed. The caller can retry safely; stores already cleaned
+must treat the repeated deletion as a no-op.
 
-## Embedding-space policy
+This is a retryable multi-store workflow, not a distributed transaction. During
+partial cleanup, some stores may already have removed their data while the
+collection remains in the catalog. Production durable stores should implement
+deletion with durable tombstones or equivalent retry-safe semantics.
 
-A collection's vector index is bound to one explicit embedding-space identity. Vectors from another provider/model/revision, dimension or metric must not be silently mixed into that index. Multimodal vectors may have different input modalities while sharing the same embedding space, provided the embedding provider declares the relevant query/document modality pair.
-
-Changing a collection's embedding space is not an ordinary metadata update. It requires an explicit reconfiguration/reindex operation so existing vectors are not compared with incompatible vectors. The initial catalog rejects such changes through CollectionReconfigurationRequiredException.
-
-Applications that need independent model spaces should create separate collections in this milestone. A future named-vector/index-profile abstraction can allow multiple spaces inside one collection without weakening compatibility checks.
-
-## Lifecycle
-
-CollectionCatalog provides create, find, list, update and delete operations. The SPI CollectionStore persists immutable descriptors and must implement atomic create semantics. The core DefaultCollectionCatalog owns validation and lifecycle policy; storage implementations own persistence.
-
-InMemoryCollectionStore is suitable for tests and embedded ephemeral use. It is not durable and is not intended for multi-process deployments.
-
-Deleting a collection currently removes its catalog definition only. A persistent implementation must coordinate deletion of dependent vector, lexical and asset records; the full cascade/deletion-job contract will be introduced with the durable index lifecycle rather than hidden inside this in-memory store.
+Direct catalog deletion remains available for low-level metadata administration
+and tests, but bypasses index and asset cleanup.
