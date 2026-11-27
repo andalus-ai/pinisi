@@ -54,13 +54,26 @@ class DefaultCollectionLifecycleCoordinatorTest {
         assertEquals(List.of("in-memory-vector-store"), error.completedStoreIds());
         assertEquals(0, vectors.count("images"));
 
-        // A new journal instance and coordinator simulate a process restart.
         var restarted = coordinator(catalog, List.of(vectors, assets));
         assertEquals(1, restarted.resumePendingDeletions());
         assertEquals(List.of("images"), assetsDeleted);
         assertTrue(catalog.find("images").isEmpty());
         assertTrue(new FileCollectionDeletionJournal(temp.resolve("journal"))
                 .listIncomplete().isEmpty());
+    }
+
+    @Test void permitsReusingCollectionIdAfterCompletedDeletion() {
+        var catalog = catalogWith("images");
+        var deleted = new ArrayList<String>();
+        var coordinator = coordinator(catalog, List.of(store("assets", deleted)));
+
+        assertTrue(coordinator.deleteCollection("images"));
+        catalog.create(new CollectionDefinition("images", "images", "", SPACE,
+                Set.of(MediaType.IMAGE), Map.of()));
+
+        assertTrue(coordinator.deleteCollection("images"));
+        assertEquals(List.of("images", "images"), deleted);
+        assertTrue(catalog.find("images").isEmpty());
     }
 
     @Test void returnsFalseForUnknownCollectionAndValidatesId() {
