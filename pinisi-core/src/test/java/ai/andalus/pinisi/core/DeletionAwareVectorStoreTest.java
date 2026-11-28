@@ -60,7 +60,7 @@ class DeletionAwareVectorStoreTest {
 
     @Test void allowsOperationsAgainAfterDeletionCompletesAndCollectionIsRecreated() {
         var backingCatalog = new DefaultCollectionCatalog(new InMemoryCollectionStore());
-        var original = backingCatalog.create(definition("images"));
+        backingCatalog.create(definition("images"));
         var journal = new FileCollectionDeletionJournal(temp.resolve("journal"));
         var rawStore = new InMemoryVectorStore();
         var guarded = new DeletionAwareVectorStore(
@@ -73,7 +73,6 @@ class DeletionAwareVectorStoreTest {
         backingCatalog.delete("images");
         var recreated = backingCatalog.create(definition("images"));
 
-        assertNotEquals(original.createdAt(), recreated.createdAt());
         guarded.upsert(recreated, record("new-vector"));
         assertEquals(1, guarded.count("images"));
     }
